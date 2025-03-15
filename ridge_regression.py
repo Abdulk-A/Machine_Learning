@@ -1,25 +1,34 @@
 import numpy as np
-
-#addings 1's the first value of each row to account for the bias term 
-def bias_column(x):
-    return np.insert(x,0,1,axis=1)
-
-#x,y input matrices , lam is the one of the 5 manually chosen values, n is num of rows, p is cols
-#returns beta coeffs
-def ridge_regression_fit(x, y, lam): 
-    #formula: ( (x_tranpose * x) + (lambda * Identity_matrix) )^(-1) * x_tranpose * y
-
-    #add the bias term to matrix   
-    x = bias_column(x)
-    n, p = x.shape
-
-    x_t = np.transpose(x)
+class RidgeRegression:
     
-    identity_matrix = np.identity(p)
-    identity_matrix[0][0] = 0
+    def __init__(self, lam=1.0):
+        self.lam = lam
+        self.beta_coeffs = None
+        
+    #addings 1's the first value of each row to account for the bias term 
+    def bias_column(self, x):
+        return np.insert(x,0,1,axis=1)
+    
+    def predict(self, X):
+        #making sure user has use the fit method
+        if self.beta_coeffs is None:
+            raise ValueError('Model has not been trained.')
 
-    return np.dot(np.dot(np.linalg.inv(np.dot(x_t, x) + (lam * identity_matrix)), x_t), y)
+        x_train = self.bias_column(X)
+        return np.dot(x_train, self.beta_coeffs) 
 
-def ridge_regression_predict(beta_coeffs, x_train):
-    x_train = bias_column(x_train)
-    return np.dot(x_train, beta_coeffs) 
+    #x: features ndarray, y: label ndarray
+    #formula: ( (x_tranpose * x) + (lambda * Identity_matrix) )^(-1) * x_tranpose * y
+    def fit(self, X, y): 
+        
+        #add the bias term to matrix   
+        X = self.bias_column(X)
+        n, p = X.shape
+
+        x_t = np.transpose(X)
+        
+        identity_matrix = np.identity(p)
+        identity_matrix[0][0] = 0
+
+        self.beta_coeffs = np.dot(np.dot(np.linalg.inv(np.dot(x_t, X) + (self.lam * identity_matrix)), x_t), y)
+
